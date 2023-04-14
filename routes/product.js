@@ -38,8 +38,10 @@ router.post('/', async (req, res) => {
 // product 수정하기
 router.put('/', async (req, res) => {
     try {
+
         res.json({
-            msg: 'update product'
+            msg: 'update product',
+
         })
     } catch (err) {
 

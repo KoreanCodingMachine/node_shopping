@@ -17,8 +17,16 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
+        const newOrder = {
+            name:req.body.orderName,
+            price:req.body.orderPrice,
+            desc:req.body.orderDesc,
+            category: req.body.orderCategory
+        }
+
         res.json({
-            msg: 'post order'
+            msg: 'post order',
+            order: newOrder
         })
     } catch (err) {
 
