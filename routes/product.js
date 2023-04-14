@@ -1,4 +1,5 @@
 import express from "express";
+import productModel from "../models/product.js";
 
 const router = express.Router()
 
@@ -8,8 +9,11 @@ const router = express.Router()
 // Product 불러오기
 router.get('/', async (req, res) => {
     try {
+        const products = await productModel.find()
         res.json({
-            msg: 'get product'
+            msg: 'get product',
+            count: products.length,
+            products
         })
     } catch (err) {
 
@@ -19,19 +23,29 @@ router.get('/', async (req, res) => {
 // product 등록하기
 
 router.post('/', async (req, res) => {
+    const {name, price, description, category} = req.body
+
     try {
-        const newProduct = {
-            name : req.body.productName,
-            price : req.body.productPrice,
-            desc : req.body.productDesc,
-            category : req.body.productCategory
-        }
+        const newProduct = new productModel({
+            name,
+            price,
+            description,
+            category
+        })
+        const createdProduct = await newProduct.save()
+
+        // const newProduct = {
+        //     name : req.body.productName,
+        //     price : req.body.productPrice,
+        //     desc : req.body.productDesc,
+        //     category : req.body.productCategory
+        // }
         res.json({
             msg: 'post product',
-            product: newProduct
+            product: createdProduct
         })
     } catch (err) {
-
+         console.error(err.message)
     }
 })
 

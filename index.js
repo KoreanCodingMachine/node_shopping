@@ -34,5 +34,5 @@ app.use('/order', orderRouter)
 
 const port = process.env.PORT || 9090
 app.listen(port, () => {
-    console.log('server started')
+    console.log(`server started ${port}`)
 })
