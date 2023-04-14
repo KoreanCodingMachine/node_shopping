@@ -20,8 +20,15 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
+        const newProduct = {
+            name : req.body.productName,
+            price : req.body.productPrice,
+            desc : req.body.productDesc,
+            category : req.body.productCategory
+        }
         res.json({
-            msg: 'post product'
+            msg: 'post product',
+            product: newProduct
         })
     } catch (err) {
 

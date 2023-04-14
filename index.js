@@ -1,6 +1,7 @@
 import express  from 'express'
 import morgan from  'morgan'
 import dotEnv from 'dotenv'
+import bodyParser from "body-parser";
 
 dotEnv.config()
 const app = express()
@@ -11,7 +12,8 @@ import orderRouter from './routes/order.js'
 // middleware
 // req , res 에 대한 로그를 찍어주는 라이브러리 -> morgans
 app.use(morgan('dev'))
-
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended : false})) // body parser 인식
 
 
 
