@@ -70,15 +70,24 @@ router.post('/', async (req, res) => {
 })
 
 // product 수정하기
-router.put('/', async (req, res) => {
-    try {
+router.put('/:productId', async (req, res) => {
 
+    const { productId } = req.params
+
+    const {productName, productPrice, productDescription, productCategory} = req.body
+
+    try {
+        await productModel.updateOne({"_id":productId},{"$set":{
+            name:productName,
+            price:productPrice,
+            description:productDescription,
+            category:productCategory
+            }})
         res.json({
             msg: 'update product',
-
         })
     } catch (err) {
-
+        console.error(err.message)
     }
 })
 
