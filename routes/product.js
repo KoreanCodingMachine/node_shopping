@@ -10,6 +10,7 @@ const router = express.Router()
 router.get('/', async (req, res) => {
     try {
         const products = await productModel.find()
+        console.log(products)
         res.json({
             msg: 'get product',
             count: products.length,
