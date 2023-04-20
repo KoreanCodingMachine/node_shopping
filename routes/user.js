@@ -97,4 +97,16 @@ router.get('/', protect, async (req, res) => {
     res.json(req.user)
 })
 
+
+// 유저 전체 리스트 가져오기
+router.get('/list', async (req, res) => {
+    try {
+        const users = await userModel.find()
+        res.json(users)
+    } catch (err) {
+        res.status(500)
+        throw new Error(err)
+    }
+})
+
 export default router

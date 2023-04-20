@@ -4,15 +4,19 @@ import userModel from "../models/user.js";
 const protect = async (req, res, next) => {
     let token
 
+    // 토큰의 위치
     if (
         req.headers.authorization &&
         req.headers.authorization.startsWith('Bearer')
     ) {
         try {
+            // 토큰 문자열 분리
             token = req.headers.authorization.split(' ')[1]
+            // 토큰 디코딩 -> payload
+            const { userId } = jwt.verify(token, "kimjuhyeong")
+            // payload 검색 -> 유저정보 req.user에 반환
+            req.user = await userModel.findById(userId)
 
-            const decoded = jwt.verify(token, "kimjuhyeong")
-            req.user = await userModel.findById(decoded.userId)
 
             next()
         } catch (err) {

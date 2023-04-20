@@ -1,5 +1,6 @@
 import express from "express";
 import orderModel from "../models/order.js";
+import {protect} from "../middleware/authMiddleware.js";
 const router = express.Router()
 
 // GET ALL ORDER
@@ -8,6 +9,7 @@ router.get('/', async (req, res) => {
         const order = await orderModel
             .find()
             .populate('product', ['name', 'price'])
+            .populate('user')
         const count = order.length
         if (count === 0) {
             return res.json({
@@ -27,14 +29,28 @@ router.get('/', async (req, res) => {
 })
 
 // GET SINGLE ORDER
-router.get('/:orderId', async (req, res) => {
+router.get('/:orderId', protect, async (req, res) => {
+
+    // 로그인한 사람과 조회하고자 하는 오더의 유저가 같다면
+
 
     const { orderId } = req.params
 
     try {
+        const orderInfo = await orderModel.findById(orderId)
+
+        console.log('!!!!!!!!!!!!!!', orderInfo)
+
+        if (req.user._id.toString() !== orderInfo.user.toString()) {
+            return res.status(406).json({
+                msg: '당신이 주문한 것만 조회 가능합니다.'
+            })
+        }
+
         const order = await orderModel
             .findById(orderId)
             .populate('product',['name', 'price'])
+            .populate('user')
         res.json({
             msg: 'get single order',
             order
@@ -47,21 +63,22 @@ router.get('/:orderId', async (req, res) => {
 
 
 // POST SINGLE ORDER
-router.post('/', async (req, res) => {
+router.post('/', protect, async (req, res) => {
 
     const { product, qty, desc } = req.body
 
+    console.log("???????????????????????????????", req.user)
     try {
 
         const newOrder = new orderModel({
-            product, qty, desc
+            product, qty, desc , user: req.user._id
         })
 
         const createdOrder = await newOrder.save()
 
         res.json({
             msg: 'post order',
-            order: createdOrder
+            order: createdOrder,
         })
     } catch (err) {
         res.status(500)
@@ -109,7 +126,7 @@ router.delete('/', async (req, res) => {
 router.delete('/:orderId', async (req, res) => {
 
     const { orderId } = req.params
-    
+
 
     try {
         await orderModel.findByIdAndDelete(orderId)

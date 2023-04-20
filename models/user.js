@@ -18,6 +18,10 @@ const userSchema = mongoose.Schema(
         bio: {
             type: Boolean,
             default: true, // true -> 남자 , false -> 여자
+        },
+        role: {
+            type: String,
+            default: 'user'
         }
     },
     {
