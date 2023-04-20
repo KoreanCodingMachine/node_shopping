@@ -24,6 +24,5 @@ const productSchema = mongoose.Schema(
 )
 
 const productModel = mongoose.model('product', productSchema)
-console.log(productModel)
 
 export default productModel

@@ -75,21 +75,40 @@ router.put('/:productId', async (req, res) => {
 
     const { productId } = req.params
 
-    const {productName, productPrice, productDescription, productCategory} = req.body
+    const { name, price, description, category } = req.body
 
-    try {
-        await productModel.updateOne({"_id":productId},{"$set":{
-            name:productName,
-            price:productPrice,
-            description:productDescription,
-            category:productCategory
-            }})
-        res.json({
-            msg: 'update product',
+    const product = await productModel.findById(productId)
+
+    if(product) {
+        // product.name = productName,
+        product.name = name ? name : product.name
+        product.price = price ? price : product.price
+        product.description = description ? description : product.description
+        product.category = category ? category : product.category
+
+        const updatedProduct = await product.save()
+
+        return res.json({
+            msg: `update product by ${productId}`,
         })
-    } catch (err) {
-        console.error(err.message)
+    } else {
+        res.status(404)
+        throw new Error('product not found')
     }
+
+    // if (productName)
+    //
+    // try {
+    //     await productModel.findByIdAndUpdate(productId,{
+    //         productName,
+    //         product
+    //     })
+    //     res.json({
+    //         msg: 'update product',
+    //     })
+    // } catch (err) {
+    //     console.error(err.message)
+    // }
 })
 
 // 상세 product 삭제하기

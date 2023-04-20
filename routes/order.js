@@ -1,7 +1,5 @@
 import express from "express";
 import orderModel from "../models/order.js";
-import order from "../models/order.js";
-
 const router = express.Router()
 
 // GET ALL ORDER
@@ -106,7 +104,7 @@ router.delete('/:orderId', async (req, res) => {
 
     try {
         await orderModel.findByIdAndDelete(orderId)
-        
+
         res.json({
             msg: 'delete id' + `${orderId}`
         })

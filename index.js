@@ -15,13 +15,12 @@ import orderRouter from './routes/order.js'
 // connect database
 connectDatabase()
 
-// middleware
+// middleware ( req -> middleware -> res)
 // req , res 에 대한 로그를 찍어주는 라이브러리 -> morgans
 app.use(cors())
 app.use(morgan('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended : false})) // body parser 인식
-
 
 // routing
 app.use('/product', productRouter)
