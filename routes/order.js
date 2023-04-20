@@ -5,15 +5,24 @@ const router = express.Router()
 // GET ALL ORDER
 router.get('/', async (req, res) => {
     try {
-        const order = await orderModel.find()
+        const order = await orderModel
+            .find()
+            .populate('product', ['name', 'price'])
         const count = order.length
+        if (count === 0) {
+            return res.json({
+                msg: '등록된 오더가 없습니다'
+            })
+        }
+
         res.json({
             msg:'get order',
             count,
             order
         })
     } catch (err) {
-        console.error(err.message)
+        res.status(500)
+        throw new Error(err.message)
     }
 })
 
@@ -23,13 +32,16 @@ router.get('/:orderId', async (req, res) => {
     const { orderId } = req.params
 
     try {
-        const one = await orderModel.findById(orderId)
+        const order = await orderModel
+            .findById(orderId)
+            .populate('product',['name', 'price'])
         res.json({
             msg: 'get single order',
-            order: one
+            order
         })
     } catch (err) {
-        console.error(err.message)
+        res.status(500)
+        throw new Error(err.message)
     }
 })
 
@@ -37,15 +49,12 @@ router.get('/:orderId', async (req, res) => {
 // POST SINGLE ORDER
 router.post('/', async (req, res) => {
 
-    const { orderName, orderPrice, orderDescription, orderCategory } = req.body
+    const { product, qty, desc } = req.body
 
     try {
 
         const newOrder = new orderModel({
-            name: orderName,
-            price: orderPrice,
-            description: orderDescription,
-            category: orderCategory
+            product, qty, desc
         })
 
         const createdOrder = await newOrder.save()
@@ -55,7 +64,8 @@ router.post('/', async (req, res) => {
             order: createdOrder
         })
     } catch (err) {
-        console.error(err.message)
+        res.status(500)
+        throw new Error(err.message) // json 형태로 에러 전송
     }
 })
 
@@ -64,24 +74,22 @@ router.put('/:orderId', async (req, res) => {
 
     const { orderId } = req.params
 
-    const { orderName, orderPrice, orderDescription, orderCategory } = req.body
+    const { product, qty, desc } = req.body
 
-    try {
-        const userInput = {
-            name : orderName,
-            price: orderPrice,
-            description: orderDescription,
-            category: orderCategory
-        }
+    const order = await orderModel.findById(orderId)
 
-        await orderModel.updateOne({"_id":orderId} , {"$set":userInput})
+    if(order) {
+        order.product = product ? product : order.product
+        order.qty = qty ? qty : order.qty
+        order.desc = desc ? desc : order.desc
+        await order.save()
 
-        res.json({
-            msg : 'fix order',
-            order: userInput
+        return res.json({
+            msg: `update order by ${orderId}`
         })
-    } catch (err) {
-        console.error(err.message)
+    } else {
+        res.status(404)
+        throw new Error('order not found')
     }
 })
 
@@ -101,6 +109,7 @@ router.delete('/', async (req, res) => {
 router.delete('/:orderId', async (req, res) => {
 
     const { orderId } = req.params
+    
 
     try {
         await orderModel.findByIdAndDelete(orderId)
