@@ -24,19 +24,20 @@ router.get('/', async (req, res) => {
 // 상세 Product를 가져오기
 router.get('/:productId', async (req, res) => {
     const { productId } = req.params
+
     try {
         const product = await productModel.findById(productId)
-        if (!product) {
-            res.json({
-                msg : 'no product'
+        if(product) {
+            return  res.json({
+                msg : 'successful get product',
+                product
             })
         }
-        res.json({
-            msg : 'successful get product',
-            product
-        })
+        res.status(404)
+        throw new Error('product not found')
     } catch (err) {
-        console.error(err.message)
+        res.status(500)
+        throw new Error(err)
     }
 })
 

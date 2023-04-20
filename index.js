@@ -10,6 +10,9 @@ const app = express()
 import connectDatabase from "./config/database.js";
 import productRouter from "./routes/product.js";
 import orderRouter from './routes/order.js'
+import userRouter from './routes/user.js'
+
+import {errorHandler, notFound} from "./middleware/errorMiddleware.js";
 
 
 // connect database
@@ -25,7 +28,10 @@ app.use(bodyParser.urlencoded({ extended : false})) // body parser 인식
 // routing
 app.use('/product', productRouter)
 app.use('/order', orderRouter)
+app.use('/user', userRouter)
 
+app.use(notFound)
+app.use(errorHandler)
 
 const port = process.env.PORT || 9090
 app.listen(port, () => {
