@@ -2,6 +2,7 @@ import express from "express";
 import userModel from "../models/user.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import {protect} from "../middleware/authMiddleware.js";
 const router = express.Router()
 
 // 회원가입
@@ -74,7 +75,7 @@ router.post('/login', async (req, res) => {
 
         // jsonwebtoken 생성
         const token = await jwt.sign(
-            {userId: user._id, email: user.email},
+            {userId: user._id, email: user.email, name: user.username},
             "kimjuhyeong",
             { expiresIn: "1h" }
         )
@@ -92,6 +93,8 @@ router.post('/login', async (req, res) => {
 
 
 // 프로필정보
-
+router.get('/', protect, async (req, res) => {
+    res.json(req.user)
+})
 
 export default router
