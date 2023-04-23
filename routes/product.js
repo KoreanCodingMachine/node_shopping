@@ -10,14 +10,15 @@ const router = express.Router()
 router.get('/', async (req, res) => {
     try {
         const products = await productModel.find()
-        console.log(products)
+
         res.json({
             msg: 'get product',
             count: products.length,
             products
         })
     } catch (err) {
-
+        res.status(500)
+        throw new Error(err.message)
     }
 })
 
@@ -27,14 +28,19 @@ router.get('/:productId', async (req, res) => {
 
     try {
         const product = await productModel.findById(productId)
+
+        // param에 해당하는 product가 있다면
         if(product) {
             return  res.json({
                 msg : 'successful get product',
                 product
             })
         }
+
+        // param에 해당하는 product가 없다면 에러객체 반환
         res.status(404)
         throw new Error('product not found')
+
     } catch (err) {
         res.status(500)
         throw new Error(err)
@@ -43,8 +49,8 @@ router.get('/:productId', async (req, res) => {
 
 
 // product 등록하기
-
 router.post('/', async (req, res) => {
+
     const {name, price, description, category} = req.body
 
     try {
@@ -80,6 +86,9 @@ router.put('/:productId', async (req, res) => {
 
     const product = await productModel.findById(productId)
 
+    // product가 있을 때
+    // 입력 req.body에 담겨저오는 수정 값이 있다면 req.body 값으로 수정
+    // 없다면 기존 product 값으로 수정
     if(product) {
         // product.name = productName,
         product.name = name ? name : product.name
@@ -91,25 +100,12 @@ router.put('/:productId', async (req, res) => {
 
         return res.json({
             msg: `update product by ${productId}`,
+            updatedProduct
         })
     } else {
         res.status(404)
         throw new Error('product not found')
     }
-
-    // if (productName)
-    //
-    // try {
-    //     await productModel.findByIdAndUpdate(productId,{
-    //         productName,
-    //         product
-    //     })
-    //     res.json({
-    //         msg: 'update product',
-    //     })
-    // } catch (err) {
-    //     console.error(err.message)
-    // }
 })
 
 // 상세 product 삭제하기

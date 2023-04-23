@@ -11,6 +11,7 @@ router.get('/', async (req, res) => {
             .populate('product', ['name', 'price'])
             .populate('user')
         const count = order.length
+
         if (count === 0) {
             return res.json({
                 msg: '등록된 오더가 없습니다'
@@ -31,16 +32,14 @@ router.get('/', async (req, res) => {
 // GET SINGLE ORDER
 router.get('/:orderId', protect, async (req, res) => {
 
-    // 로그인한 사람과 조회하고자 하는 오더의 유저가 같다면
-
-
     const { orderId } = req.params
 
     try {
         const orderInfo = await orderModel.findById(orderId)
 
         console.log('!!!!!!!!!!!!!!', orderInfo)
-
+        console.log('??????????????', req.user)
+        // 로그인한 사람과 장바구니를 등록한 유저의 아이디가 같다면
         if (req.user._id.toString() !== orderInfo.user.toString()) {
             return res.status(406).json({
                 msg: '당신이 주문한 것만 조회 가능합니다.'
