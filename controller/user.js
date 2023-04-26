@@ -1,6 +1,7 @@
 import userModel from "../models/user.js";
 import jwt from "jsonwebtoken";
-import {emailConfirmTemplate, sendEmail} from "../config/sendEmail.js";
+import {emailConfirmTemplate, passwordConfirmTemplate, sendEmail} from "../config/sendEmail.js";
+
 
 const userRegister = async (req, res) => {
 
@@ -48,6 +49,84 @@ const userRegister = async (req, res) => {
         res.status(500).json({
             msg: err.message
         })
+
+    }
+}
+
+const emailConfirm = async (req, res) => {
+
+    const token = req.body.token
+
+    try {
+        const {email} = await jwt.verify(token, process.env.EMAIL_CONFIRM_ACCESS_TOKEN_KEY)
+        console.log(email)
+        const user = await userModel.findOne({email})
+        console.log('????????????????', user)
+        if (user.isEmail === true) {
+            return res.status(410).json({
+                msg: 'already isEmail is true'
+            })
+        }
+
+        user.isEmail = true
+        await user.save()
+
+        res.json({
+            msg: 'successful change isEmail'
+        })
+    } catch (err) {
+        res.status(500).json({
+            msg: err.message
+        })
+    }
+}
+
+const findPassword = async (req, res) => {
+
+    const {email} = req.body
+
+    try {
+        const user = await userModel.findOne({email})
+
+        const findPasswordToken = await jwt.sign(
+            {id: user._id},
+            process.env.FIND_PASSWORD_ACCESS_TOKEN_KEY,
+            {expiresIn: '10m'}
+        )
+
+        await sendEmail(user.email, '이메일 확인', passwordConfirmTemplate(findPasswordToken))
+
+        res.json({
+            msg: 'please check your email'
+        })
+
+
+    } catch (err) {
+        res.status(500).json({
+            msg: err.message
+        })
+    }
+}
+
+
+
+const updatePasswordBeforeLogin = async (req, res) => {
+
+    const { token, newPassword } = req.body
+
+    try {
+        const { id } = await jwt.verify(token, process.env.FIND_PASSWORD_ACCESS_TOKEN_KEY)
+
+        const user = await userModel.findById(id)
+
+        user.password = newPassword
+
+        await user.save()
+
+        res.json({
+            msg: 'updated password'
+        })
+    } catch (err) {
 
     }
 }
@@ -130,4 +209,4 @@ const getAllUserList = async (req, res) => {
 }
 
 
-export { userRegister, loggedUser, getProfile, getAllUserList }
+export { userRegister, loggedUser, getProfile, getAllUserList, emailConfirm, findPassword, updatePasswordBeforeLogin }

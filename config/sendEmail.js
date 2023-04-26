@@ -10,6 +10,14 @@ const emailConfirmTemplate = (token) =>
         </div>
     `
 
+const passwordConfirmTemplate = (token) =>
+    `
+        <div>
+            <h3>아래 버튼을 누르시면 가입이 완료됩니다.</h3>
+            <br/>
+            <h3>http://localhost:3000/password/confirm?token=${token}</h3>
+        </div>
+    `
 
 
 
@@ -32,4 +40,6 @@ const sendEmail = async (email, title, body) => {
 
 }
 
-export { sendEmail, emailConfirmTemplate }
+
+
+export { sendEmail, emailConfirmTemplate, passwordConfirmTemplate }

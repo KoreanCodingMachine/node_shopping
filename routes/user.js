@@ -1,6 +1,13 @@
 import express from "express";
 import {protect} from "../middleware/authMiddleware.js";
-import { userRegister, loggedUser, getProfile, getAllUserList } from "../controller/user.js";
+import {
+    userRegister,
+    loggedUser,
+    getProfile,
+    getAllUserList,
+    emailConfirm,
+    findPassword, updatePasswordBeforeLogin
+} from "../controller/user.js";
 
 const router = express.Router()
 
@@ -8,6 +15,14 @@ const router = express.Router()
 // 회원가입
 router.post('/register', userRegister )
 
+// 이메일 확인
+router.put('/email/confirm', emailConfirm)
+
+// 패스워드 확인
+router.post('/find/password', findPassword)
+
+// 패스워드 변경 (로그인 전)
+router.put('/update/password', updatePasswordBeforeLogin)
 
 // 로그인
 router.post('/login', loggedUser)
