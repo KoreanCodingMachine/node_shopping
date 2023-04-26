@@ -4,7 +4,7 @@ const getAllProducts = async (req, res) => {
     try {
         const pageSize = req.query.size
         const page = Number(req.query.pageNumber) || 1
-        
+
         const keyword = req.query.keyword
             ? {
                 name: {

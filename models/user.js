@@ -16,6 +16,10 @@ const userSchema = mongoose.Schema(
             type: String,
             required: true
         },
+        isEmail: {
+            type: Boolean,
+            default: false
+        },
         bio: {
             type: Boolean,
             default: true, // true -> 남자 , false -> 여자

@@ -1,5 +1,6 @@
 import userModel from "../models/user.js";
 import jwt from "jsonwebtoken";
+import {emailConfirmTemplate, sendEmail} from "../config/sendEmail.js";
 
 const userRegister = async (req, res) => {
 
@@ -28,6 +29,16 @@ const userRegister = async (req, res) => {
         // 유저 생성
         const createdUser = await newUser.save()
 
+        // 이메일 확인용 토큰
+        const emailConfirmToken = await jwt.sign(
+            {email: createdUser.email},
+            process.env.EMAIL_CONFIRM_ACCESS_TOKEN_KEY,
+            {expiresIn: '10m'}
+        )
+
+        // 이메일 전송
+        await sendEmail(createdUser.email, '이메일 확인', emailConfirmTemplate(emailConfirmToken))
+
         res.json({
             msg: 'success create user',
             createdUser
@@ -35,7 +46,7 @@ const userRegister = async (req, res) => {
 
     } catch (err) {
         res.status(500).json({
-            msg: 'failed create user'
+            msg: err.message
         })
 
     }
