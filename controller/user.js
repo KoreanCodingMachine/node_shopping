@@ -5,7 +5,7 @@ import {emailConfirmTemplate, passwordConfirmTemplate, sendEmail} from "../confi
 
 const userRegister = async (req, res) => {
 
-    const { username, email, password, bio } = req.body
+    const { username, email, password, bio, phone } = req.body
 
     try {
         // 이메일 중복체크를 한다.
@@ -24,7 +24,8 @@ const userRegister = async (req, res) => {
             username,
             email,
             password,
-            bio
+            bio,
+            phone
         })
 
         // 유저 생성
@@ -108,7 +109,30 @@ const findPassword = async (req, res) => {
     }
 }
 
+const findEmail = async (req, res) => {
 
+    const { phone } = req.body
+
+    try {
+        const user = await userModel.findOne({phone})
+
+        if (!user) {
+            return res.status(400).json({
+                msg: 'no user'
+            })
+        }
+
+        res.json({
+            msg: 'successful find email',
+            email: user.email
+        })
+
+    } catch (err) {
+        res.status(500).json({
+            msg: err.message
+        })
+    }
+}
 
 const updatePasswordBeforeLogin = async (req, res) => {
 
@@ -209,4 +233,4 @@ const getAllUserList = async (req, res) => {
 }
 
 
-export { userRegister, loggedUser, getProfile, getAllUserList, emailConfirm, findPassword, updatePasswordBeforeLogin }
+export { userRegister, loggedUser, getProfile, getAllUserList, emailConfirm, findPassword, updatePasswordBeforeLogin, findEmail }

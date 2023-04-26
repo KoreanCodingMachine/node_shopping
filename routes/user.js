@@ -6,7 +6,7 @@ import {
     getProfile,
     getAllUserList,
     emailConfirm,
-    findPassword, updatePasswordBeforeLogin
+    findPassword, updatePasswordBeforeLogin, findEmail
 } from "../controller/user.js";
 
 const router = express.Router()
@@ -18,11 +18,16 @@ router.post('/register', userRegister )
 // 이메일 확인
 router.put('/email/confirm', emailConfirm)
 
+// 이메일 찾기
+router.post('/find/email', findEmail)
+
 // 패스워드 확인
 router.post('/find/password', findPassword)
 
 // 패스워드 변경 (로그인 전)
 router.put('/update/password', updatePasswordBeforeLogin)
+
+
 
 // 로그인
 router.post('/login', loggedUser)
