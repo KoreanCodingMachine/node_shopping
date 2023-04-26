@@ -11,8 +11,9 @@ import connectDatabase from "./config/database.js";
 import productRouter from "./routes/product.js";
 import orderRouter from './routes/order.js'
 import userRouter from './routes/user.js'
+import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 
-import {errorHandler, notFound} from "./middleware/errorMiddleware.js";
+
 
 
 // connect database

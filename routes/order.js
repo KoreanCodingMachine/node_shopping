@@ -1,7 +1,5 @@
 import express from "express";
-import orderModel from "../models/order.js";
 import { protect } from "../middleware/authMiddleware.js";
-import productModel from "../models/product.js";
 import {createOrder, deleteAllOrder, deleteAOrder, getAllOrder, getAOrder, updateOrder} from "../controller/order.js";
 const router = express.Router()
 

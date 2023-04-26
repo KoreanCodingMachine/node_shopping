@@ -1,7 +1,4 @@
 import express from "express";
-import userModel from "../models/user.js";
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
 import {protect} from "../middleware/authMiddleware.js";
 import { userRegister, loggedUser, getProfile, getAllUserList } from "../controller/user.js";
 

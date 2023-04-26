@@ -1,5 +1,4 @@
 import userModel from "../models/user.js";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const userRegister = async (req, res) => {
@@ -15,14 +14,14 @@ const userRegister = async (req, res) => {
                 msg: '이미 가입한 회원이 있습니다.'
             })
         }
-        // 비밀번호를 암호화 한다.
-        const hashedPassword = await bcrypt.hash(password,10)
+        // // 비밀번호를 암호화 한다.
+        // const hashedPassword = await bcrypt.hash(password,10)
 
         // db document 생성
         const newUser = new userModel({
             username,
             email,
-            password: hashedPassword,
+            password,
             bio
         })
 
@@ -35,38 +34,23 @@ const userRegister = async (req, res) => {
         })
 
     } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
+        res.status(500).json({
+            msg: 'failed create user'
+        })
+
     }
 }
 
 const loggedUser = async (req, res) => {
     const { email, password } = req.body
 
-    try {
-        // 이메일 정보 조회
-        const user = await userModel.findOne({email})
+    const user = await userModel.findOne({email})
 
-        // 가입되지 않은 이메일 -> 에러
-        if (!user) {
-            return res.status(408).json({
-                msg: 'not authorized user'
-            })
-        }
-
-        // 가입되어있다면 비밀번호 디코딩후 비밀번호 일치여부 확인
-        const isMatched = await bcrypt.compare(password, user.password)
-
-        if (!isMatched) {
-            return res.status(409).json({
-                msg: 'password do not match'
-            })
-        }
-
+    if (user && (await user.matchPassword(password)) ) {
         // 비밀번호가 일치한다면 토큰 발급
         const token = await jwt.sign(
             {userId:user._id, email:user.email},
-            'kimjuhyeong',
+            process.env.JWT_ACCESSTOKEN_SECRET_KEY,
             {expiresIn: '1h'}
         )
 
@@ -74,11 +58,49 @@ const loggedUser = async (req, res) => {
             user,
             token
         })
-
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
+    } else {
+       res.status(500).json({
+           msg: 'invalid email and password'
+       })
     }
+    // try {
+    //     // 이메일 정보 조회
+    //     const user = await userModel.findOne({email})
+    //
+    //     // 가입되지 않은 이메일 -> 에러
+    //     if (!user) {
+    //         return res.status(408).json({
+    //             msg: 'not authorized user'
+    //         })
+    //     }
+    //
+    //     // 가입되어있다면 비밀번호 디코딩후 비밀번호 일치여부 확인
+    //     // const isMatched = await bcrypt.compare(password, user.password)
+    //
+    //     const isMatched = await user.matchPassword(password)
+    //
+    //     if (!isMatched) {
+    //         return res.status(409).json({
+    //             msg: 'password do not match'
+    //         })
+    //     }
+    //
+    //     // 비밀번호가 일치한다면 토큰 발급
+    //     const token = await jwt.sign(
+    //         {userId:user._id, email:user.email},
+    //         process.env.JWT_ACCESSTOKEN_SECRET_KEY,
+    //         {expiresIn: '1h'}
+    //     )
+    //
+    //     res.json({
+    //         user,
+    //         token
+    //     })
+
+    // } catch (err) {
+    //     res.status(500)
+    //     throw new Error(err.message)
+    // }
 
 }
 

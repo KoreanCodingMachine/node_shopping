@@ -12,7 +12,7 @@ const protect = async (req, res, next) => {
             // 토큰 정제
             token = req.headers.authorization.split(' ')[1]
             // 토큰 디코딩
-            const decoded = await jwt.verify(token, 'kimjuhyeong')
+            const decoded = await jwt.verify(token, process.env.JWT_ACCESSTOKEN_SECRET_KEY)
             // 디코딩된 정보로 유저정보 조회
             req.user = await userModel.findById(decoded.userId)
 
