@@ -2,11 +2,9 @@ import productModel from "../models/product.js";
 
 const getAllProducts = async (req, res) => {
     try {
-        const pageSize = 10
+        const pageSize = req.query.size
         const page = Number(req.query.pageNumber) || 1
-
-
-
+        
         const keyword = req.query.keyword
             ? {
                 name: {
@@ -26,6 +24,7 @@ const getAllProducts = async (req, res) => {
         if (products) {
             return res.json({
                 msg: 'get all producdts',
+                total: products.length,
                 products,
                 page,
                 pages: Math.ceil(count / pageSize)
