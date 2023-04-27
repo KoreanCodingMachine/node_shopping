@@ -31,8 +31,10 @@ const getAllProducts = async (req, res) => {
             })
         }
 
-        res.status(404)
-        throw new Error('no products')
+        res.status(404).json({
+            msg: 'no products'
+        })
+
     } catch (err) {
         res.status(500)
         throw new Error(err.message)
@@ -53,8 +55,10 @@ const getAProduct = async (req, res) => {
             })
         }
 
-        res.status(404)
-        throw new Error('no product')
+        res.status(404).json({
+            msg: 'no product'
+        })
+
     } catch (err) {
         res.status(500)
         throw new Error(err.message)
@@ -139,20 +143,30 @@ const deleteAProduct = async (req, res) => {
             msg:`deleted product at ${productId}`
         })
     } catch (err) {
-
+        res.status(500)
+        throw new Error(err.message)
     }
 }
 
-const categoryProduct = async (req, res) => {
+const getCategoryProduct = async (req, res) => {
 
-    const { category } = req.params
+    const { category } = req.query
 
     try {
-        const categoryProduct = await productModel.find({category})
-    } catch (err) {
 
+        const categoryProduct = await productModel.find({category})
+
+
+        res.json({
+            msg: 'get category',
+            categoryProduct
+        })
+
+    } catch (err) {
+        res.status(500)
+        throw new Error(err.message)
     }
 }
 
 
-export { getAllProducts, getAProduct, postProduct, updateProduct, deleteAllProduct, deleteAProduct }
+export { getAllProducts, getAProduct, postProduct, updateProduct, deleteAllProduct, deleteAProduct, getCategoryProduct }

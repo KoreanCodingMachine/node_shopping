@@ -29,7 +29,6 @@ const protect = async (req, res, next) => {
         res.status(401).json({
             msg: 'not authorized, no token'
         })
-        // throw new Error('not authorized, no token')
     }
 }
 
@@ -40,7 +39,6 @@ const isAdmin = (req, res, next) => {
     //     })
     // }
     // next()
-    console.log(req.user)
     if (req.user && req.user.role === 'admin') {
         next()
     } else {

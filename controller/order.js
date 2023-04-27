@@ -140,7 +140,7 @@ const deleteAOrder = async (req, res) => {
 
     try {
         const orderInfo = await orderModel.findById(orderId)
-        
+
         if (req.user._id.toString() === orderInfo.user.toString()){
             await orderModel.findByIdAndDelete(orderId)
 
