@@ -1,5 +1,5 @@
 import express from "express";
-import {protect} from "../middleware/authMiddleware.js";
+import {isAdmin, protect} from "../middleware/authMiddleware.js";
 import {
     userRegister,
     loggedUser,
@@ -39,6 +39,6 @@ router.get('/', protect, getProfile)
 
 
 // 유저 전체 리스트 가져오기
-router.get('/list', getAllUserList)
+router.get('/list',protect, isAdmin ,getAllUserList)
 
 export default router

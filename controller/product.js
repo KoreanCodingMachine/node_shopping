@@ -1,12 +1,15 @@
 import productModel from "../models/product.js";
 import expressAsyncHandler from "express-async-handler";
 
-const getAllProducts =  expressAsyncHandler(async (req, res) => {
+const getAllProducts = expressAsyncHandler(async (req, res) => {
 
         const pageSize = req.query.size
 
         const page = Number(req.query.pageNumber) || 1
 
+        // db 의 name 필드가 req.query.keyword로 시작하는 모든 문서를 검색한다.
+        // 몽고 db의 $regex 쿼리를 사용한다.
+        //
         const keyword = req.query.keyword
             ? {
                 name: {
@@ -39,7 +42,7 @@ const getAllProducts =  expressAsyncHandler(async (req, res) => {
         }
 })
 
-const getAProduct =   expressAsyncHandler( async (req, res) => {
+const getAProduct = expressAsyncHandler( async (req, res) => {
 
         const { productId } = req.params
 
@@ -61,10 +64,9 @@ const getAProduct =   expressAsyncHandler( async (req, res) => {
 
 
 
-const postProduct =  expressAsyncHandler(async (req, res) => {
+const postProduct = expressAsyncHandler(async (req, res) => {
 
         const { name, price, description, category } = req.body
-
 
         const newProduct = new productModel({
             name,

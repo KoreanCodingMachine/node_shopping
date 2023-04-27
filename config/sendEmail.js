@@ -41,5 +41,4 @@ const sendEmail = async (email, title, body) => {
 }
 
 
-
 export { sendEmail, emailConfirmTemplate, passwordConfirmTemplate }
