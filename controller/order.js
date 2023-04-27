@@ -1,7 +1,11 @@
 import orderModel from "../models/order.js";
 
 const getAllOrder = async (req, res) => {
+
+    console.log(req.user)
+
     try {
+
 
         const orders = await orderModel
             .find()
@@ -15,12 +19,15 @@ const getAllOrder = async (req, res) => {
             })
         }
 
-        res.status(404)
-        throw new Error('no orders')
+        res.status(408).json({
+            msg: 'no order'
+        })
 
     } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
+        res.status(500).json({
+            msg: err.message
+        })
+
     }
 
 }

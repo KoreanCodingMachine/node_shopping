@@ -5,7 +5,7 @@ import {emailConfirmTemplate, passwordConfirmTemplate, sendEmail} from "../confi
 
 const userRegister = async (req, res) => {
 
-    const { username, email, password, bio, phone } = req.body
+    const { username, email, password, bio, phone, role } = req.body
 
     try {
         // 이메일 중복체크를 한다.
@@ -25,7 +25,8 @@ const userRegister = async (req, res) => {
             email,
             password,
             bio,
-            phone
+            phone,
+            role
         })
 
         // 유저 생성

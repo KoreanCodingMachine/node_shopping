@@ -1,10 +1,10 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import {isAdmin, protect} from "../middleware/authMiddleware.js";
 import {createOrder, deleteAllOrder, deleteAOrder, getAllOrder, getAOrder, updateOrder} from "../controller/order.js";
 const router = express.Router()
 
 // GET ALL ORDER
-router.get('/', getAllOrder)
+router.get('/', protect, isAdmin, getAllOrder)
 
 
 // GET SINGLE ORDER
@@ -17,13 +17,17 @@ router.get('/:orderId', protect, getAOrder)
 // 로그인 정보는 protect 미들웨어에서 받아온다
 router.post('/', protect, createOrder)
 
+
 // PUT SINGLE ORDER
-router.put('/:orderId', updateOrder)
+// 내가 등록한것만 수정할 수 있는 권한
+router.put('/:orderId',protect ,updateOrder)
 
 // DELETE ALL ORDER
-router.delete('/', deleteAllOrder)
+//
+router.delete('/',protect, isAdmin, deleteAllOrder)
 
 // DELETE SINGLE ORDER
+// 내가 등록한것만 삭제
 router.delete('/:orderId', deleteAOrder)
 
 

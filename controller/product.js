@@ -143,5 +143,16 @@ const deleteAProduct = async (req, res) => {
     }
 }
 
+const categoryProduct = async (req, res) => {
+
+    const { category } = req.params
+
+    try {
+        const categoryProduct = await productModel.find({category})
+    } catch (err) {
+
+    }
+}
+
 
 export { getAllProducts, getAProduct, postProduct, updateProduct, deleteAllProduct, deleteAProduct }

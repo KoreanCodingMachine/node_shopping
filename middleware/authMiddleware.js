@@ -18,15 +18,37 @@ const protect = async (req, res, next) => {
 
             next()
         } catch (err){
-            res.status(401)
-            throw new Error(`Not authorized, token failed`)
+            res.status(401).json({
+                msg: 'invalid token'
+            })
+
         }
     }
 
     if (!token) {
-        res.status(401)
-        throw new Error('not authorized, no token')
+        res.status(401).json({
+            msg: 'not authorized, no token'
+        })
+        // throw new Error('not authorized, no token')
     }
 }
 
-export { protect }
+const isAdmin = (req, res, next) => {
+    // if (req.user.role !== 'admin') {
+    //     res.status(401).json({
+    //         msg: 'Not authorized as an admin'
+    //     })
+    // }
+    // next()
+    console.log(req.user)
+    if (req.user && req.user.role === 'admin') {
+        next()
+    } else {
+        res.status(408).json({
+            msg: `not authorized as an admin`
+        })
+    }
+}
+
+
+export { protect, isAdmin }
