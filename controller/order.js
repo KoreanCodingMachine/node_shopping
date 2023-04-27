@@ -1,16 +1,12 @@
 import orderModel from "../models/order.js";
 
 const getAllOrder = async (req, res) => {
-
-    console.log(req.user)
-
     try {
-
-
         const orders = await orderModel
             .find()
             .populate('product')
             .populate('user')
+        console.log(orders)
 
         if (orders) {
             return res.json({
@@ -97,10 +93,12 @@ const updateOrder = async (req, res) => {
 
     const { orderId } = req.params
 
+    console.log(req.user)
+
     try {
         const orderInfo = await orderModel.findById(orderId)
 
-        if (orderInfo) {
+        if ( orderInfo && (req.user._id.toString() === orderInfo.user.toString())) {
             orderInfo.product = product ? product : orderInfo.product
             orderInfo.qty = qty ? qty : orderInfo.qty
             orderInfo.desc = desc ? desc : orderInfo.desc
@@ -113,8 +111,10 @@ const updateOrder = async (req, res) => {
             })
         }
 
-        res.status(404)
-        throw new Error('order not found')
+        res.status(404).json({
+            msg: '당신이 등록한 장바구니만 수정 가능합니다.'
+        })
+
 
     } catch (err) {
         res.status(500)
@@ -138,12 +138,19 @@ const deleteAOrder = async (req, res) => {
 
     const { orderId } = req.params
 
-
     try {
-        await orderModel.findByIdAndDelete(orderId)
+        const orderInfo = await orderModel.findById(orderId)
+        
+        if (req.user._id.toString() === orderInfo.user.toString()){
+            await orderModel.findByIdAndDelete(orderId)
 
-        res.json({
-            msg: 'delete id' + `${orderId}`
+            return res.json({
+                msg: `delete order by ${orderId}`
+            })
+        }
+
+        res.status(401).json({
+            msg: 'delete not authorized'
         })
     } catch (err) {
         console.error(err.message)
