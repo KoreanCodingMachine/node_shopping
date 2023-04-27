@@ -1,12 +1,13 @@
 import orderModel from "../models/order.js";
+import expressAsyncHandler from "express-async-handler";
 
-const getAllOrder = async (req, res) => {
-    try {
+const getAllOrder = expressAsyncHandler( async (req, res) => {
+
         const orders = await orderModel
             .find()
             .populate('product')
             .populate('user')
-        console.log(orders)
+
 
         if (orders) {
             return res.json({
@@ -15,34 +16,23 @@ const getAllOrder = async (req, res) => {
             })
         }
 
-        res.status(408).json({
-            msg: 'no order'
-        })
+       if (!orders) {
+           res.status(408)
+           throw new Error('no order')
+       }
 
-    } catch (err) {
-        res.status(500).json({
-            msg: err.message
-        })
+})
 
-    }
+const getAOrder = expressAsyncHandler( async (req, res) => {
 
-}
+        const { orderId } = req.params
 
-const getAOrder = async (req, res) => {
-
-    const { orderId } = req.params
-
-    try {
         const orderInfo = await orderModel.findById(orderId)
-
-        console.log(orderInfo.user._id)
-        console.log(req.user)
 
         // 로그인한 유저의 정보와 , 상품을 주문한 유저의 정보가 같다면 조회, 아니면 에러
         if (orderInfo.user._id.toString() !== req.user._id.toString()) {
-            res.status(406).json({
-                msg: '상품을 등록한 유저만 조회할 수 있습니다.'
-            })
+            res.status(406)
+            throw new Error('상품을 등록한 유저만 조회할 수 있습니다.')
         }
 
         const order = await orderModel
@@ -54,17 +44,13 @@ const getAOrder = async (req, res) => {
             msg: `get order by ${orderId}`,
             order
         })
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
-    }
-}
 
-const createOrder = async (req, res) => {
+})
 
-    const { product, qty, desc } = req.body
+const createOrder = expressAsyncHandler( async (req, res) => {
 
-    try {
+        const { product, qty, desc } = req.body
+
         const newOrder = new orderModel({
             product,
             qty,
@@ -79,23 +65,15 @@ const createOrder = async (req, res) => {
             createdOrder
         })
 
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
-    }
-
-}
+})
 
 
-const updateOrder = async (req, res) => {
+const updateOrder = expressAsyncHandler( async (req, res) => {
 
-    const { product, qty, desc } = req.body
+        const { product, qty, desc } = req.body
 
-    const { orderId } = req.params
+        const { orderId } = req.params
 
-    console.log(req.user)
-
-    try {
         const orderInfo = await orderModel.findById(orderId)
 
         if ( orderInfo && (req.user._id.toString() === orderInfo.user.toString())) {
@@ -111,34 +89,23 @@ const updateOrder = async (req, res) => {
             })
         }
 
-        res.status(404).json({
-            msg: '당신이 등록한 장바구니만 수정 가능합니다.'
-        })
+        res.status(404)
+        throw new Error('당신이 등록한 장바구니만 수정 가능합니다.')
+})
 
+const deleteAllOrder = expressAsyncHandler( async (req, res) => {
 
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
-    }
-
-}
-
-const deleteAllOrder = async (req, res) => {
-    try {
         await orderModel.deleteMany()
         res.json({
             msg : 'delete all order'
         })
-    } catch (err) {
 
-    }
-}
+})
 
-const deleteAOrder = async (req, res) => {
+const deleteAOrder = expressAsyncHandler( async (req, res) => {
 
-    const { orderId } = req.params
+        const { orderId } = req.params
 
-    try {
         const orderInfo = await orderModel.findById(orderId)
 
         if (req.user._id.toString() === orderInfo.user.toString()){
@@ -149,12 +116,8 @@ const deleteAOrder = async (req, res) => {
             })
         }
 
-        res.status(401).json({
-            msg: 'delete not authorized'
-        })
-    } catch (err) {
-        console.error(err.message)
-    }
-}
+        res.status(401)
+        throw new Error('delete not authorized')
+})
 
 export { getAllOrder, getAOrder, createOrder, updateOrder, deleteAllOrder, deleteAOrder}

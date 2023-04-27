@@ -1,21 +1,20 @@
 import userModel from "../models/user.js";
 import jwt from "jsonwebtoken";
 import {emailConfirmTemplate, passwordConfirmTemplate, sendEmail} from "../config/sendEmail.js";
+import expressAsyncHandler from "express-async-handler";
 
+const userRegister =  expressAsyncHandler( async (req, res) => {
 
-const userRegister = async (req, res) => {
+        const { username, email, password, bio, phone, role } = req.body
 
-    const { username, email, password, bio, phone, role } = req.body
-
-    try {
         // 이메일 중복체크를 한다.
         const user = await userModel.findOne({email})
 
         if (user) {
-            res.status(400).json({
-                msg: '이미 가입한 회원이 있습니다.'
-            })
+            res.status(400)
+            throw new Error('이미 가입한 회원이 있습니다.')
         }
+
         // // 비밀번호를 암호화 한다.
         // const hashedPassword = await bcrypt.hash(password,10)
 
@@ -47,27 +46,19 @@ const userRegister = async (req, res) => {
             createdUser
         })
 
-    } catch (err) {
-        res.status(500).json({
-            msg: err.message
-        })
+})
 
-    }
-}
+const emailConfirm =  expressAsyncHandler(async (req, res) => {
 
-const emailConfirm = async (req, res) => {
+        const token = req.body.token
 
-    const token = req.body.token
-
-    try {
         const {email} = await jwt.verify(token, process.env.EMAIL_CONFIRM_ACCESS_TOKEN_KEY)
-        console.log(email)
+
         const user = await userModel.findOne({email})
-        console.log('????????????????', user)
+
         if (user.isEmail === true) {
-            return res.status(410).json({
-                msg: 'already isEmail is true'
-            })
+            res.status(401)
+            throw new Error('already isEmail true')
         }
 
         user.isEmail = true
@@ -76,18 +67,13 @@ const emailConfirm = async (req, res) => {
         res.json({
             msg: 'successful change isEmail'
         })
-    } catch (err) {
-        res.status(500).json({
-            msg: err.message
-        })
-    }
-}
 
-const findPassword = async (req, res) => {
+})
 
-    const {email} = req.body
+const findPassword = expressAsyncHandler( async (req, res) => {
 
-    try {
+        const {email} = req.body
+
         const user = await userModel.findOne({email})
 
         const findPasswordToken = await jwt.sign(
@@ -101,26 +87,18 @@ const findPassword = async (req, res) => {
         res.json({
             msg: 'please check your email'
         })
+})
+
+const findEmail = expressAsyncHandler( async (req, res) => {
+
+        const { phone } = req.body
 
 
-    } catch (err) {
-        res.status(500).json({
-            msg: err.message
-        })
-    }
-}
-
-const findEmail = async (req, res) => {
-
-    const { phone } = req.body
-
-    try {
         const user = await userModel.findOne({phone})
 
         if (!user) {
-            return res.status(400).json({
-                msg: 'no user'
-            })
+            res.status(404)
+            throw new Error('no user')
         }
 
         res.json({
@@ -128,18 +106,12 @@ const findEmail = async (req, res) => {
             email: user.email
         })
 
-    } catch (err) {
-        res.status(500).json({
-            msg: err.message
-        })
-    }
-}
+})
 
-const updatePasswordBeforeLogin = async (req, res) => {
+const updatePasswordBeforeLogin = expressAsyncHandler( async (req, res) => {
 
-    const { token, newPassword } = req.body
+        const { token, newPassword } = req.body
 
-    try {
         const { id } = await jwt.verify(token, process.env.FIND_PASSWORD_ACCESS_TOKEN_KEY)
 
         const user = await userModel.findById(id)
@@ -151,12 +123,10 @@ const updatePasswordBeforeLogin = async (req, res) => {
         res.json({
             msg: 'updated password'
         })
-    } catch (err) {
 
-    }
-}
+})
 
-const loggedUser = async (req, res) => {
+const loggedUser =  expressAsyncHandler( async (req, res) => {
     const { email, password } = req.body
 
     const user = await userModel.findOne({email})
@@ -174,9 +144,8 @@ const loggedUser = async (req, res) => {
             token
         })
     } else {
-       res.status(500).json({
-           msg: 'invalid email and password'
-       })
+       res.status(500)
+       throw new Error('invalid email and password')
     }
     // try {
     //     // 이메일 정보 조회
@@ -217,21 +186,16 @@ const loggedUser = async (req, res) => {
     //     throw new Error(err.message)
     // }
 
-}
+})
 
-const getProfile = async (req, res) => {
-    res.json(req.user)
-}
+const getProfile = expressAsyncHandler(async (req, res) => {
+        res.json(req.user)
+})
 
-const getAllUserList = async (req, res) => {
-    try {
+const getAllUserList = expressAsyncHandler( async (req, res) => {
         const users = await userModel.find()
         res.json(users)
-    } catch (err) {
-        res.status(500)
-        throw new Error(err)
-    }
-}
+})
 
 
 export { userRegister, loggedUser, getProfile, getAllUserList, emailConfirm, findPassword, updatePasswordBeforeLogin, findEmail }

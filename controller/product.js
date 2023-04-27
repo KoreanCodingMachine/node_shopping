@@ -1,8 +1,10 @@
 import productModel from "../models/product.js";
+import expressAsyncHandler from "express-async-handler";
 
-const getAllProducts = async (req, res) => {
-    try {
+const getAllProducts =  expressAsyncHandler(async (req, res) => {
+
         const pageSize = req.query.size
+
         const page = Number(req.query.pageNumber) || 1
 
         const keyword = req.query.keyword
@@ -15,11 +17,16 @@ const getAllProducts = async (req, res) => {
             : {}
 
         const count = await productModel.countDocuments({...keyword})
+
         const products = await productModel
             .find({...keyword})
             .limit(pageSize)
             .skip(pageSize * (page - 1))
 
+        if (products.length === 0) {
+            res.status(404)
+            throw new Error('no product')
+        }
 
         if (products) {
             return res.json({
@@ -30,22 +37,13 @@ const getAllProducts = async (req, res) => {
                 pages: Math.ceil(count / pageSize)
             })
         }
+})
 
-        res.status(404).json({
-            msg: 'no products'
-        })
+const getAProduct =   expressAsyncHandler( async (req, res) => {
 
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
-    }
-}
+        const { productId } = req.params
 
-const getAProduct = async (req, res) => {
 
-    const { productId } = req.params
-
-    try {
         const product = await productModel.findById(productId)
 
         if (product) {
@@ -55,24 +53,19 @@ const getAProduct = async (req, res) => {
             })
         }
 
-        res.status(404).json({
-            msg: 'no product'
-        })
-
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
-    }
-
-}
+        if (!product) {
+           res.status(404)
+           throw new Error('no product')
+        }
+})
 
 
 
-const postProduct = async (req, res) => {
+const postProduct =  expressAsyncHandler(async (req, res) => {
 
-    const { name, price, description, category } = req.body
+        const { name, price, description, category } = req.body
 
-    try {
+
         const newProduct = new productModel({
             name,
             price,
@@ -86,14 +79,9 @@ const postProduct = async (req, res) => {
             msg: 'post product',
             createdProduct
         })
+})
 
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
-    }
-}
-
-const updateProduct = async (req, res) => {
+const updateProduct = expressAsyncHandler(async (req, res) => {
 
     const { productId } = req.params
 
@@ -118,43 +106,37 @@ const updateProduct = async (req, res) => {
         })
     }
 
-    res.status(500)
-    throw new Error('no matched product')
+})
 
-}
+const deleteAllProduct = expressAsyncHandler(async (req, res) => {
 
-const deleteAllProduct = async (req, res) => {
-    try {
         await productModel.deleteMany()
+
         res.json({
             msg : 'deleted all products'
         })
-    } catch (err) {
-        console.error(err.message)
-    }
-}
+})
 
-const deleteAProduct = async (req, res) => {
-    const { productId } = req.params
+const deleteAProduct = expressAsyncHandler(async (req, res) => {
+        const { productId } = req.params
 
-    try {
         await productModel.findByIdAndDelete(productId)
         res.json({
             msg:`deleted product at ${productId}`
         })
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
-    }
-}
 
-const getCategoryProduct = async (req, res) => {
+})
 
-    const { category } = req.query
+const getCategoryProduct = expressAsyncHandler( async (req, res) => {
 
-    try {
+        const { category } = req.query
 
         const categoryProduct = await productModel.find({category})
+
+        if (category !== 'tv') {
+            res.status(404)
+            throw new Error('no mathced category')
+        }
 
         if (categoryProduct){
             return  res.json({
@@ -163,16 +145,8 @@ const getCategoryProduct = async (req, res) => {
             })     
         }
 
-        res.status(404).json({
-            msg: 'no matched product'
-        })
 
-
-    } catch (err) {
-        res.status(500)
-        throw new Error(err.message)
-    }
-}
+})
 
 
 export { getAllProducts, getAProduct, postProduct, updateProduct, deleteAllProduct, deleteAProduct, getCategoryProduct }
