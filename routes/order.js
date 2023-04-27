@@ -15,13 +15,12 @@ router.get('/:orderId', protect, getAOrder)
 
 // POST SINGLE ORDER
 // 장바구니 품목에 등록하려면 로그인이 필요하다
-// 로그인 정보는 protect 미들웨어에서 받아온다
 router.post('/', protect, createOrder)
 
 
 // PUT SINGLE ORDER
 // 내가 등록한것만 수정할 수 있는 권한
-router.put('/:orderId',protect ,updateOrder)
+router.put('/:orderId',protect, updateOrder)
 
 // DELETE ALL ORDER
 // 로그인되어있고 , addmin권한이라면 장바구니를 전체 삭제 할 수 있는 권한을 준다.
@@ -29,7 +28,7 @@ router.delete('/',protect, isAdmin, deleteAllOrder)
 
 // DELETE SINGLE ORDER
 // 내가 등록한것만 삭제 할 수있도록 권한
-router.delete('/:orderId',protect  ,deleteAOrder)
+router.delete('/:orderId',protect, deleteAOrder)
 
 
 export default router

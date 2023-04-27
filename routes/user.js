@@ -27,8 +27,6 @@ router.post('/find/password', findPassword)
 // 패스워드 변경 (로그인 전)
 router.put('/update/password', updatePasswordBeforeLogin)
 
-
-
 // 로그인
 router.post('/login', loggedUser)
 
