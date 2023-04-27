@@ -156,11 +156,17 @@ const getCategoryProduct = async (req, res) => {
 
         const categoryProduct = await productModel.find({category})
 
+        if (categoryProduct){
+            return  res.json({
+                msg: 'get category',
+                categoryProduct
+            })     
+        }
 
-        res.json({
-            msg: 'get category',
-            categoryProduct
+        res.status(404).json({
+            msg: 'no matched product'
         })
+
 
     } catch (err) {
         res.status(500)
