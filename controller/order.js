@@ -10,14 +10,14 @@ const getAllOrder = expressAsyncHandler( async (req, res) => {
 
 
         if (orders) {
-            return res.json({
+            return res.status(200).json({
                 msg: 'get all orders',
                 orders
             })
         }
 
        if (!orders) {
-           res.status(408)
+           res.status(204)
            throw new Error('no order')
        }
 
@@ -31,7 +31,7 @@ const getAOrder = expressAsyncHandler( async (req, res) => {
 
         // 로그인한 유저의 정보와 , 상품을 주문한 유저의 정보가 같다면 조회, 아니면 에러
         if (orderInfo.user._id.toString() !== req.user._id.toString()) {
-            res.status(406)
+            res.status(403) // forbidden
             throw new Error('상품을 등록한 유저만 조회할 수 있습니다.')
         }
 
@@ -89,14 +89,14 @@ const updateOrder = expressAsyncHandler( async (req, res) => {
             })
         }
 
-        res.status(404)
+        res.status(403) // forbidden
         throw new Error('당신이 등록한 장바구니만 수정 가능합니다.')
 })
 
 const deleteAllOrder = expressAsyncHandler( async (req, res) => {
 
         await orderModel.deleteMany()
-        res.json({
+        res.status(200).json({
             msg : 'delete all order'
         })
 
@@ -111,7 +111,7 @@ const deleteAOrder = expressAsyncHandler( async (req, res) => {
         if (req.user._id.toString() === orderInfo.user.toString()){
             await orderModel.findByIdAndDelete(orderId)
 
-            return res.json({
+            return res.status(200).json({
                 msg: `delete order by ${orderId}`
             })
         }

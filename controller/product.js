@@ -27,7 +27,7 @@ const getAllProducts = expressAsyncHandler(async (req, res) => {
             .skip(pageSize * (page - 1))
 
         if (products.length === 0) {
-            res.status(404)
+            res.status(204) // no content
             throw new Error('no product')
         }
 
@@ -57,7 +57,7 @@ const getAProduct = expressAsyncHandler( async (req, res) => {
         }
 
         if (!product) {
-           res.status(404)
+           res.status(204) // no content
            throw new Error('no product')
         }
 })
@@ -77,7 +77,7 @@ const postProduct = expressAsyncHandler(async (req, res) => {
 
         const createdProduct = await newProduct.save()
 
-        res.json({
+        res.status(201).json({
             msg: 'post product',
             createdProduct
         })
@@ -103,7 +103,7 @@ const updateProduct = expressAsyncHandler(async (req, res) => {
 
         await product.save()
 
-        return res.json({
+        return res.status(201).json({
             msg: `product updated by ${productId}`
         })
     }
@@ -135,18 +135,17 @@ const getCategoryProduct = expressAsyncHandler( async (req, res) => {
 
         const categoryProduct = await productModel.find({category})
 
-        if (category !== 'tv') {
-            res.status(404)
-            throw new Error('no mathced category')
+        const count = categoryProduct.length
+
+        if ((Array.isArray(categoryProduct)) && (!count)) {
+            res.status(204) // no content
+            throw new Error('no product')
         }
 
-        if (categoryProduct){
-            return  res.json({
-                msg: 'get category',
-                categoryProduct
-            })     
-        }
-
+        res.json({
+            msg: 'get category',
+            categoryProduct
+        })
 
 })
 

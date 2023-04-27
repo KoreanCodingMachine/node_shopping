@@ -11,7 +11,7 @@ const userRegister =  expressAsyncHandler( async (req, res) => {
         const user = await userModel.findOne({email})
 
         if (user) {
-            res.status(400)
+            res.status(409) // 서버의 요청 상태와 충돌
             throw new Error('이미 가입한 회원이 있습니다.')
         }
 
@@ -41,7 +41,7 @@ const userRegister =  expressAsyncHandler( async (req, res) => {
         // 이메일 전송
         await sendEmail(createdUser.email, '이메일 확인', emailConfirmTemplate(emailConfirmToken))
 
-        res.json({
+        res.status(201).json({
             msg: 'success create user',
             createdUser
         })
@@ -57,14 +57,14 @@ const emailConfirm =  expressAsyncHandler(async (req, res) => {
         const user = await userModel.findOne({email})
 
         if (user.isEmail === true) {
-            res.status(401)
+            res.status(409) // conflict
             throw new Error('already isEmail true')
         }
 
         user.isEmail = true
         await user.save()
 
-        res.json({
+        res.status(201).json({
             msg: 'successful change isEmail'
         })
 
@@ -84,7 +84,7 @@ const findPassword = expressAsyncHandler( async (req, res) => {
 
         await sendEmail(user.email, '이메일 확인', passwordConfirmTemplate(findPasswordToken))
 
-        res.json({
+        res.status(201).json({
             msg: 'please check your email'
         })
 })
@@ -101,7 +101,7 @@ const findEmail = expressAsyncHandler( async (req, res) => {
             throw new Error('no user')
         }
 
-        res.json({
+        res.status(200).json({
             msg: 'successful find email',
             email: user.email
         })
@@ -120,7 +120,7 @@ const updatePasswordBeforeLogin = expressAsyncHandler( async (req, res) => {
 
         await user.save()
 
-        res.json({
+        res.status(201).json({
             msg: 'updated password'
         })
 
@@ -139,12 +139,12 @@ const loggedUser =  expressAsyncHandler( async (req, res) => {
             {expiresIn: '1h'}
         )
 
-        res.json({
+        res.status(201).json({
             user,
             token
         })
     } else {
-       res.status(500)
+       res.status(409) // conflict
        throw new Error('invalid email and password')
     }
     // try {
@@ -189,12 +189,12 @@ const loggedUser =  expressAsyncHandler( async (req, res) => {
 })
 
 const getProfile = expressAsyncHandler(async (req, res) => {
-        res.json(req.user)
+        res.status(200).json(req.user)
 })
 
 const getAllUserList = expressAsyncHandler( async (req, res) => {
         const users = await userModel.find()
-        res.json(users)
+        res.status(200).json(users)
 })
 
 
