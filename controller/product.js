@@ -3,43 +3,43 @@ import expressAsyncHandler from "express-async-handler";
 
 const getAllProducts = expressAsyncHandler(async (req, res) => {
 
-        const pageSize = req.query.size
-
-        const page = Number(req.query.pageNumber) || 1
-
-        // db 의 name 필드가 req.query.keyword로 시작하는 모든 문서를 검색한다.
-        // 몽고 db의 $regex 쿼리를 사용한다.
-        //
-        const keyword = req.query.keyword
-            ? {
-                name: {
-                    $regex: req.query.keyword,
-                    $options: 'i'
-                }
+    // 페이지 네이션
+    // 1. 쿼리로 pageSize(페이지당 컨텐츠 갯수) , page(현재 페이지) , keyword 를 입력받는다.
+    const pageSize = req.query.size
+    const page = req.query.pageNumber || 1
+    const keyword = req.query.keyword
+        ? {
+            name : {
+                $regex: req.query.keyword,
+                $options: 'i'
             }
-            : {}
-
-        const count = await productModel.countDocuments({...keyword})
-
-        const products = await productModel
-            .find({...keyword})
-            .limit(pageSize)
-            .skip(pageSize * (page - 1))
-
-        if (products.length === 0) {
-            res.status(204) // no content
-            throw new Error('no product')
         }
+        : {}
 
-        if (products) {
-            return res.json({
-                msg: 'get all producdts',
-                total: products.length,
-                products,
-                page,
-                pages: Math.ceil(count / pageSize)
-            })
-        }
+    // 2. keyword에 맞는 products 모델을 조회한다.
+    const products = await productModel.find({...keyword})
+
+    // 3. products 데이터의 총 갯수를 구한다.
+    const count = await productModel.countDocuments({...keyword})
+
+    // 3. products 의 데이터가 없다면 -> 204 (no content)
+    if (!products) {
+        res.status(204).json({
+            msg: 'no products'
+        })
+    }
+
+    // 4. products 데이터가 있다면 페이지네이션
+    if (products) {
+        res.status(200).json({
+            msg: 'get products',
+            total:count,
+            products,
+            page: (+page),
+            pageSize: Math.ceil(count / pageSize)
+
+        })
+    }
 })
 
 const getAProduct = expressAsyncHandler( async (req, res) => {
@@ -131,21 +131,45 @@ const deleteAProduct = expressAsyncHandler(async (req, res) => {
 
 const getCategoryProduct = expressAsyncHandler( async (req, res) => {
 
-        const { category } = req.query
+        const pageSize = req.query.size
 
-        const categoryProduct = await productModel.find({category})
+        const page = req.query.page || 1
 
-        const count = categoryProduct.length
+
+        const category = req.query.category
+                ? {
+                    category: {
+                        $regex: req.query.category,
+                        $options: 'i'
+                    }
+                }
+                : {}
+
+        const categoryProduct = await productModel
+            .find({...category})
+            .limit(pageSize)
+            .skip(pageSize * (page-1))
+
+        const count = await productModel.countDocuments({...category})
+
+        const pages = Math.ceil(count / pageSize )
 
         if ((Array.isArray(categoryProduct)) && (!count)) {
-            res.status(204) // no content
-            throw new Error('no product')
+            res.status(204).json({
+                msg: 'no category product'
+            })
+
         }
 
-        res.json({
-            msg: 'get category',
-            categoryProduct
-        })
+        if ((Array.isArray(categoryProduct)) && count) {
+            res.status(200).json ({
+                msg: 'get category',
+                count,
+                categoryProduct,
+                page:(+page),
+                pages
+            })
+        }
 
 })
 

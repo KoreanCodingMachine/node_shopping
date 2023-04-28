@@ -40,14 +40,14 @@ const userSchema = mongoose.Schema(
 )
 
 userSchema.pre('save', async function(next){
-    try {
-        const salt = await bcrypt.genSalt(10)
-        this.password = await bcrypt.hash(this.password, salt)
-    } catch (err) {
-        console.log(err.message)
-    }
+    // salt 값 생성
+    const salt = await bcrypt.genSalt(10)
+    // userSshema의 password 를 해쉬함수로 변경하여 저장
+    this.password = await bcrypt.hash(this.password, salt)
+    next()
 })
 
+// 유저 로그인시 비밀번호 검증하는 메소드 생성
 userSchema.methods.matchPassword = async function (enterPassword){
     return await bcrypt.compare(enterPassword, this.password)
 }
