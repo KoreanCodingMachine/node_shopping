@@ -147,15 +147,26 @@ const findPassword = expressAsyncHandler( async (req, res) => {
         // })
 
         // 1. 사용자로부터 이메일을 입력받는다.
-            const 
+            const { email } = req.body
         // 2. 이메일에 해당하는 유저가 있는지를 확인하고
-
+            const user = await userModel.findOne({email})
         // 3. 유저가 없다면 -> 에러
-
+            if (!user) {
+                res.status(404)
+                throw new Error('no user')
+            }
         // 4. 유저가 있다면 비밀번호 이메일 인증용 토큰을 생성하여
-
+            const passwordConfirmToken = await jwt.sign(
+                {userId:user._id},
+                process.env.FIND_PASSWORD_ACCESS_TOKEN_KEY,
+                {expiresIn: '10m'}
+            )
         // 5. 비밀번호 이메일 인증용 템플릿과 함께 해당 이메일로 메일을 보낸다.
+            await sendEmail(email, '비밀번호 찾기 이메일 인증', passwordConfirmTemplate(passwordConfirmToken))
 
+            return res.status(201).json({
+                msg: 'send findPasswordConfirm email'
+            })
 })
 
 // 이메일 찾기 api
@@ -184,20 +195,41 @@ const findEmail = expressAsyncHandler( async (req, res) => {
 // 토큰와 , 새로운 비밀번호를 받아 새로운 비밀번호로 대체 해주는 api
 const updatePasswordBeforeLogin = expressAsyncHandler( async (req, res) => {
 
-        const { token, newPassword } = req.body
+        // const { token, newPassword } = req.body
+        //
+        // const { id } = await jwt.verify(token, process.env.FIND_PASSWORD_ACCESS_TOKEN_KEY)
+        //
+        // const user = await userModel.findById(id)
+        //
+        // user.password = newPassword
+        //
+        // await user.save()
+        //
+        // res.status(201).json({
+        //     msg: 'updated password'
+        // })
 
-        const { id } = await jwt.verify(token, process.env.FIND_PASSWORD_ACCESS_TOKEN_KEY)
+    // 토큰은 header로 받고 , 새로운 비밀번호는 body로 받는다.
+    const { newPassword } = req.body
+    const  token  = req.headers.authorization.split(' ')[1]
+    
+    // 받은 토큰을 디코딩하여 user 정보를 조회한다.
+    const {userId} = jwt.verify(token, process.env.FIND_PASSWORD_ACCESS_TOKEN_KEY)
+    console.log(userId)
+    const user = await userModel.findById(userId)
+    console.log(user)
+    // user의 정보가 없다면, 404 에러
+    if (!user) {
+        res.status(404)
+        throw new Error('no user')
+    }
+    // user의 정보가 있다면 , 비밀번호 교체 후 db에 저장한다.
+    user.password = newPassword
+    await user.save()
 
-        const user = await userModel.findById(id)
-
-        user.password = newPassword
-
-        await user.save()
-
-        res.status(201).json({
-            msg: 'updated password'
-        })
-
+    res.status(201).json({
+        msg: 'success password change before login'
+    })
 })
 
 const loggedUser =  expressAsyncHandler( async (req, res) => {
