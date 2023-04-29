@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer'
 
 
+// 이메일 확인 시 받을 템플릿
 const emailConfirmTemplate = (token) =>
     `
         <div>
@@ -10,6 +11,7 @@ const emailConfirmTemplate = (token) =>
         </div>
     `
 
+// 비밀번호 확인 시 받을 템플릿
 const passwordConfirmTemplate = (token) =>
     `
         <div>

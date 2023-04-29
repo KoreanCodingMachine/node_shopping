@@ -6,7 +6,9 @@ import {
     getProfile,
     getAllUserList,
     emailConfirm,
-    findPassword, updatePasswordBeforeLogin, findEmail
+    findPassword,
+    updatePasswordBeforeLogin,
+    findEmail
 } from "../controller/user.js";
 
 const router = express.Router()
