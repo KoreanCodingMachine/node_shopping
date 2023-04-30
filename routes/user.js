@@ -8,7 +8,9 @@ import {
     emailConfirm,
     findPassword,
     updatePasswordBeforeLogin,
-    findEmail
+    updatePasswordAfterLogin,
+    findEmail,
+    logoutUser
 } from "../controller/user.js";
 
 const router = express.Router()
@@ -29,9 +31,14 @@ router.post('/find/password', findPassword)
 // 패스워드 변경 (로그인 전)
 router.put('/update/password', updatePasswordBeforeLogin)
 
+// 패스워드 변경 (로그인 후)
+router.put('/update/password/after', protect, updatePasswordAfterLogin)
+
 // 로그인
 router.post('/login', loggedUser)
 
+// 로그아웃
+router.post('/logout', logoutUser)
 
 // 프로필정보
 // 프로필정보를 가져오려면 로그인후에 이용해야한다. -> protect middleware 사용
