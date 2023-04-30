@@ -122,12 +122,12 @@ const findEmail = expressAsyncHandler( async (req, res) => {
 
         // 핸드폰 번호와 일치하는 유저가 없다면
         if (!user) {
-            return res.status(404).json({
+            return res.status(204).json({
                 msg: 'no matched phone'
             })
         }
 
-        res.status(200).json({
+        res.json({
             msg: '핸드폰 인증 완료',
             email: user.email
         })
@@ -159,7 +159,7 @@ const updatePasswordBeforeLogin = expressAsyncHandler( async (req, res) => {
     user.password = newPassword
     await user.save()
 
-    res.status(201).json({
+    res.json({
         msg: 'user change password success'
     })
 
@@ -183,7 +183,7 @@ const updatePasswordAfterLogin = expressAsyncHandler(async (req, res) => {
         user.password = newPassword
         await user.save()
 
-        res.json({
+        res.status(205).json({
             msg: `update password by ${user.email}`
         })
 })
@@ -224,21 +224,19 @@ const loggedUser =  expressAsyncHandler( async (req, res) => {
 })
 
 const logoutUser = expressAsyncHandler(async (req, res) => {
-        // 유저가 로그인 되어있는지 검증하고 (auth middleware)
 
-        // 로그인된 유저가 있다면 로그아웃 진행
-        res.status(200).json({
+        res.json({
             msg: 'logout'
         })
 })
 
 const getProfile = expressAsyncHandler(async (req, res) => {
-        res.status(200).json(req.user)
+        res.json(req.user)
 })
 
 const getAllUserList = expressAsyncHandler( async (req, res) => {
         const users = await userModel.find()
-        res.status(200).json(users)
+        res.json(users)
 })
 
 

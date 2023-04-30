@@ -3,10 +3,14 @@ import morgan from  'morgan'
 import dotEnv from 'dotenv'
 import bodyParser from "body-parser";
 import cors from 'cors'
+import passport from "passport"
+
+
 
 dotEnv.config()
 const app = express()
 
+import passportConfig from "./config/passport.js";
 import connectDatabase from "./config/database.js";
 import productRouter from "./routes/product.js";
 import orderRouter from './routes/order.js'
@@ -25,6 +29,9 @@ app.use(cors())
 app.use(morgan('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended : false})) // body parser 인식
+
+// passport config
+passportConfig(passport)
 
 // routing
 app.use('/product', productRouter)
