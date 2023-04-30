@@ -7,11 +7,14 @@ import {
     updateProduct,
     deleteAllProduct,
     deleteAProduct,
-    getCategoryProduct
+    getCategoryProduct,
+    createProductReview
 } from "../controller/product.js";
 
 import {isAdmin, protect} from "../middleware/authMiddleware.js";
+import passport from "passport";
 
+const checkAuth = passport.authenticate('jwt', { session: false })
 const router = express.Router()
 
 // CRUD
@@ -38,7 +41,11 @@ router.delete('/:productId',protect, isAdmin, deleteAProduct)
 // 전체 product 삭제하기
 router.delete('/',protect, isAdmin, deleteAllProduct)
 
-
+// 리뷰 등록하기
+// @desc Create new review(product)
+// @route POST /products/:id/reviews
+// @access Private
+router.post('/:id/review', checkAuth, createProductReview)
 
 
 
