@@ -1,5 +1,6 @@
 import productModel from "../models/product.js";
 import expressAsyncHandler from "express-async-handler";
+import redisCli from "../config/redis.js";
 
 // 전체 product를 페이지네이션으로 조회하게 만들어주는 api
 const getAllProducts = expressAsyncHandler(async (req, res) => {
@@ -80,18 +81,48 @@ const getAllProducts = expressAsyncHandler(async (req, res) => {
         })
     }
 
-    const products = await productModel
-        .find({...keyword})
-        .limit(pageSize)
-        .skip(pageSize * (page-1))
+    const productsFromRedis = await redisCli.get('products')
 
-    res.status(200).json({
-        msg:'get products',
-        count,
-        products,
-        page: (+page),
-        pages
-    })
+    if (productsFromRedis === null) {
+        const productsFromDB = await productModel.find()
+        await redisCli.set('products', JSON.stringify(productsFromDB))
+
+        const products = await productModel
+            .find({...keyword})
+            .limit(pageSize)
+            .skip(pageSize * (page-1))
+
+        res.status(200).json({
+            msg:'get products',
+            count,
+            products,
+            page: (+page),
+            pages
+        })
+    }
+
+    // const products = await productModel
+    //     .find({...keyword})
+    //     .limit(pageSize)
+    //     .skip(pageSize * (page-1))
+
+    // res.status(200).json({
+    //     msg:'get products',
+    //     count,
+    //     products,
+    //     page: (+page),
+    //     pages
+    // })
+
+      // const jsonData = JSON.parse(productsFromRedis)
+
+      // const products = jsonData
+      //     .find({...keyword})
+      //     .limit(pageSize)
+      //     .skip(pageSize * (page - 1))
+      //
+      // console.log(products)
+     res.json(JSON.parse(productsFromRedis))
 
 })
 
@@ -116,24 +147,67 @@ const getAProduct = expressAsyncHandler( async (req, res) => {
 
         //
 
-        // param 으로 productId 를 받음
+        // // param 으로 productId 를 받음
         const { productId } = req.params
+        //
+        // // prodcutId 로 product 조회
+        // const product = await productModel.findById(productId)
+        //
+        // // product가 없다면 , 204
+        // if (!product) {
+        //     res.status(204).json({
+        //         msg: 'no product'
+        //     })
+        // }
+        //
+        // // product가 존재한다면 전달
+        // res.status(200).json({
+        //     msg: 'get product',
+        //     product
+        // })
 
-        // prodcutId 로 product 조회
-        const product = await productModel.findById(productId)
+        const productFromRedis = await redisCli.get('products')
+        console.log('!!!!!!!!!!!!!!', productFromRedis)
+        // products의 내용이 없으면 -> 업데이트 -> 디비에 있는 찾고자하는 데이터를 뿌려준다.
+        if (productFromRedis === null){
+            const products = await productModel.find()
+            await redisCli.set('products', JSON.stringify(products))
+            const product = await productModel.findById(productId)
 
-        // product가 없다면 , 204
-        if (!product) {
-            res.status(204).json({
-                msg: 'no product'
+            return res.json({
+                msg: 'get product',
+                product
+            })
+        }
+        // products의 내용이 있으면 -> 내가 찾고자하는 productId를 찾아서 리턴
+
+        const jsonData = JSON.parse(productFromRedis)
+        console.log("@@@@@@@@@", jsonData)
+        const data = await jsonData.find(data => data._id === productId.toString())
+        console.log("!!!!!!!!",typeof data)
+
+        if (!data) {
+            await redisCli.del('products')
+            const products = await productModel.find()
+            await redisCli.set("products", products)
+
+            const jsonData = await JSON.parse(productFromRedis)
+            console.log('!!!!!!!!!!!!!', jsonData)
+            const data = await jsonData.find(data => data._id.toString() === productId.toString())
+
+
+            return res.json({
+                msg: 'get product',
+                data
             })
         }
 
-        // product가 존재한다면 전달
-        res.status(200).json({
+        res.json({
             msg: 'get product',
-            product
+            data
         })
+
+
 })
 
 
@@ -170,13 +244,20 @@ const postProduct = expressAsyncHandler(async (req, res) => {
         })
 
         const createdProduct = await newProduct.save()
-
-        if (createdProduct) {
-            return res.status(201).json({
-                msg: 'create a product',
-                createdProduct
-            })
+        const productFromRedis = await redisCli.get('products')
+        if (productFromRedis) {
+            const products = JSON.parse(productFromRedis)
+            products.push(createdProduct)
+            await redisCli.set('products', JSON.stringify(products))
+        } else {
+            const products = await productModel.find()
+            await redisCli.set('products', JSON.stringify(products))
         }
+
+        return res.json({
+            msg: `successfully created new product`,
+            product: createdProduct
+        })
 })
 
 const updateProduct = expressAsyncHandler(async (req, res) => {
@@ -206,6 +287,9 @@ const updateProduct = expressAsyncHandler(async (req, res) => {
 
     // product를 수정하려면 auth, admin 미들웨어를 통과해야한다.
 
+
+
+
     // 수정할 productId 를 params 으로 받는다.
     const { productId } = req.params
 
@@ -233,7 +317,16 @@ const updateProduct = expressAsyncHandler(async (req, res) => {
     // 변경사항 저장
     await product.save()
 
-    res.status(201).json({
+    // 레디스 반영
+
+    const products = await productModel.find()
+    await redisCli.del('products')
+    const redisProducts = await redisCli.set('products', JSON.stringify(products))
+    console.log('!!!!!!!!!!!!!!!!!', redisProducts)
+
+    console.log(redisProducts.find((data) => data._id.toString() === productId.toString() ))
+
+    res.json({
         msg: `update product by ${productId}`
     })
 
@@ -253,7 +346,9 @@ const deleteAllProduct = expressAsyncHandler(async (req, res) => {
 
         await productModel.deleteMany()
 
-        res.status(204).json({
+        await redisCli.del('products')
+
+        res.status(200).json({
             msg: 'delete all products'
         })
 

@@ -15,7 +15,8 @@ import {
 import passport from "passport";
 
 
-const checkAuth = passport.authenticate('jwt', {session: false})
+const checkJwt = passport.authenticate('jwt', {session: false})
+
 
 const router = express.Router()
 
@@ -46,7 +47,7 @@ router.post('/logout', logoutUser)
 
 // 프로필정보
 // 프로필정보를 가져오려면 로그인후에 이용해야한다. -> protect middleware 사용
-router.get('/', checkAuth, getProfile)
+router.get('/', checkJwt, getProfile)
 
 
 // 유저 전체 리스트 가져오기

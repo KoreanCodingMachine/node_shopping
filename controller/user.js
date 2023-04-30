@@ -2,6 +2,7 @@ import userModel from "../models/user.js";
 import jwt from "jsonwebtoken";
 import {emailConfirmTemplate, passwordConfirmTemplate, sendEmail} from "../config/sendEmail.js";
 import expressAsyncHandler from "express-async-handler";
+import redisCli from "../config/redis.js";
 
 // 유저 회원가입시 이메일 인증
 const userRegister =  expressAsyncHandler( async (req, res) => {
@@ -192,6 +193,7 @@ const loggedUser =  expressAsyncHandler( async (req, res) => {
     // 유저 로그인 , 비밀번호 검증은 디비에서
 
     const { email , password } = req.body
+
 
     // 1.입력된 이메일에 해당하는 유저를 조회한다.
     const user = await userModel.findOne({email})
